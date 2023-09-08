@@ -1,0 +1,101 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  email      String     @unique
+  phone      String     @unique
+  password   String
+  name       String?
+  userDetail UserDetail
+}
+
+model Category {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        @unique
+  isActive      Boolean       @default(true)
+  isDeleted     Boolean       @default(false)
+  subCategories SubCategory[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  updatedBy     UserDetail[]
+}
+
+model SubCategory {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId String       @db.ObjectId
+  category   Category     @relation(fields: [categoryId], references: [id])
+  name       String       @unique
+  isActive   Boolean      @default(true)
+  isDeleted  Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  expenses   Expense[]
+  updatedBy  UserDetail[]
+}
+
+model Expense {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  subCategoryId String       @db.ObjectId
+  subCategory   SubCategory  @relation(fields: [subCategoryId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  isActive      Boolean      @default(true)
+  isDeleted     Boolean      @default(false)
+  isLoan        Boolean      @default(true)
+  comment       String?
+  unitType      String?
+  extra         Float        @default(0)
+  amount        Float        @default(0)
+  quantity      Float        @default(0)
+  purchaseDate  DateTime     @db.Date
+  updatedBy     UserDetail[]
+}
+
+model Loan {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  releseDate DateTime @db.Date
+  amount     Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model UnitTypes {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LabourTypes {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  name       String       @unique
+  amount     Float        @default(0)
+  isActive   Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  labourWork LabourWork[]
+}
+
+model LabourWork {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  labourTypeId String      @db.ObjectId
+  workerCount  Float       @default(0)
+  workedOn     DateTime     @db.Date
+  labourType   LabourTypes @relation(fields: [labourTypeId], references: [id])
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+type UserDetail {
+  userId    String   @db.ObjectId
+  updatedAt DateTime @default(now())
+}
