@@ -43,7 +43,7 @@ async function start() {
 
   app.use(
     cors({
-      origin: process.env.Origins.split(','),
+      origin: process.env.Origins ? process.env.Origins.split(',') : [],
       // methods: "GET,HEAD,PUT,PATCH,POST",
       credentials: true,
     })
