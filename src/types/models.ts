@@ -4,6 +4,24 @@ import {
   import { Context } from '../context'
 
 
+export const User = objectType({
+    name: "User",
+    definition(t) {
+      t.string("id");
+      t.string("email");
+      t.string("phone");
+      t.string("name");
+    },
+  });
+  
+export const Token = objectType({
+    name: "AuthToken",
+    definition(t) {
+      t.string("token");
+    },
+  });
+  
+
 export const Category = objectType({
     name: 'Category',
     definition(t) {

@@ -2,6 +2,10 @@
 ### Do not make changes to this file directly
 
 
+type AuthToken {
+  token: String
+}
+
 type Category {
   createdAt: DateTime
   id: String!
@@ -102,6 +106,7 @@ type Mutation {
   createLoan(amount: Float!, releaseDate: Date): Loan
   createSubCategory(categoryId: String!, name: String!): SubCategory
   createUnitType(name: String!): UnitTypes
+  createUser(email: String!, name: String!, password: String!, phone: String!): User
   deleteCategory(id: String!): Category
   deleteExpense(id: String!): Expense
   deleteLabourTypes(id: String!): LabourTypes
@@ -109,6 +114,8 @@ type Mutation {
   deleteLoan(id: String!): Loan
   deleteSubCategory(id: String!): SubCategory
   deleteUnitType(id: String!): UnitTypes
+  login(password: String!, phone: String!): AuthToken
+  refresh: AuthToken
   updateCategory(id: String!, isActive: Boolean, isDeleted: Boolean, name: String): Category
   updateExpense(data: ExpenseUpDateInput!): Expense
   updateLabourWork(id: String!, workerCount: Float!): LabourWork
@@ -149,6 +156,13 @@ type UnitTypes {
   isActive: Boolean!
   name: String!
   updatedAt: DateTime
+}
+
+type User {
+  email: String
+  id: String
+  name: String
+  phone: String
 }
 
 input WorkerCountCreateInput {

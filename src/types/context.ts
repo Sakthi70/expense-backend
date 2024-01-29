@@ -11,6 +11,13 @@ import {
 } from 'nexus'
 import { Context } from '../context'
 import _ from 'lodash'
+import {
+  generateJwt,
+  getRefreshToken,
+  hashPassword,
+  passwordCompareSync,
+  resolveJwtToken,
+} from '../utils/password'
 
 export const Query = objectType({
   name: 'Query',
@@ -20,7 +27,8 @@ export const Query = objectType({
       args: {
         isDeleted: booleanArg(),
       },
-      resolve: (_parent, args: any, context: Context) => {
+      resolve: async(_parent, args: any, context: Context) => {
+        await resolveJwtToken(context);
         let updateValue: any = {}
         Object.keys(args).forEach((field) => {
           if (args[field]) {
@@ -39,7 +47,8 @@ export const Query = objectType({
         isDeleted: booleanArg(),
         categoryId: stringArg(),
       },
-      resolve: (_parent, args: any, context: Context) => {
+      resolve: async(_parent, args: any, context: Context) => {
+        await resolveJwtToken(context);
         let updateValue: any = {}
         Object.keys(args).forEach((field) => {
           if (args[field]) {
@@ -58,7 +67,8 @@ export const Query = objectType({
         isLoan: booleanArg(),
         subCategoryId: stringArg(),
       },
-      resolve: (_parent, args: any, context: Context) => {
+      resolve: async(_parent, args: any, context: Context) => {
+        await resolveJwtToken(context);
         let updateValue: any = {}
         Object.keys(args).forEach((field) => {
           if (args[field]) {
@@ -76,7 +86,8 @@ export const Query = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_parent, args, context: Context) => {
+      resolve: async(_parent, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.expense.findUniqueOrThrow({
           where: {
             id: args.id,
@@ -87,14 +98,16 @@ export const Query = objectType({
 
     t.list.nonNull.field('allLoanAmounts', {
       type: 'Loan',
-      resolve: (_parent, _args, context: Context) => {
+      resolve: async(_parent, _args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.loan.findMany({})
       },
     })
 
     t.list.nonNull.field('allUnitTypes', {
       type: 'UnitTypes',
-      resolve: (_parent, _args, context: Context) => {
+      resolve: async(_parent, _args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.unitTypes.findMany({})
       },
     })
@@ -102,28 +115,30 @@ export const Query = objectType({
     t.list.nonNull.field('allLabourWorks', {
       type: 'LabourWork',
       args: {
-        startDate:arg({type:'Date'}),
-        endDate: arg({type:'Date'})
+        startDate: arg({ type: 'Date' }),
+        endDate: arg({ type: 'Date' }),
       },
-    
-      resolve: (_parent, args, context: Context) => {
-        let workedOn :any = {};
-        if(args.startDate){
+
+      resolve: async(_parent, args, context: Context) => {
+        await resolveJwtToken(context);
+        let workedOn: any = {}
+        if (args.startDate) {
           workedOn['gte'] = args.startDate
         }
-        if(args.endDate){
+        if (args.endDate) {
           workedOn['lte'] = args.endDate
         }
 
         return context.prisma.labourWork.findMany({
-          where: _.isEmpty(workedOn) ? {} : {workedOn }
+          where: _.isEmpty(workedOn) ? {} : { workedOn },
         })
       },
     })
 
     t.list.nonNull.field('allLabourTypes', {
       type: 'LabourTypes',
-      resolve: (_parent, _args, context: Context) => {
+      resolve: async(_parent, _args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.labourTypes.findMany({})
       },
     })
@@ -138,7 +153,8 @@ export const Mutation = objectType({
       args: {
         name: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.category.create({
           data: {
             name: args.name,
@@ -155,7 +171,8 @@ export const Mutation = objectType({
         isActive: booleanArg(),
         isDeleted: booleanArg(),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         let { id, ...data } = args as any
         let updateValue: any = {}
         Object.keys(data).forEach((field) => {
@@ -177,7 +194,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.category.delete({
           where: {
             id: args.id,
@@ -194,7 +212,8 @@ export const Mutation = objectType({
         isActive: booleanArg(),
         isDeleted: booleanArg(),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         let { id, ...data } = args as any
         let updateValue: any = {}
         Object.keys(data).forEach((field) => {
@@ -217,7 +236,8 @@ export const Mutation = objectType({
         name: nonNull(stringArg()),
         categoryId: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.subCategory.create({
           data: {
             name: args.name,
@@ -232,7 +252,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.subCategory.delete({
           where: {
             id: args.id,
@@ -251,6 +272,7 @@ export const Mutation = objectType({
         ),
       },
       resolve: async (_, args, context: Context) => {
+        await resolveJwtToken(context);
         const newExpense = await context.prisma.expense.create({
           data: {
             amount: args.data.amount,
@@ -278,6 +300,7 @@ export const Mutation = objectType({
         ),
       },
       resolve: async (_, args, context: Context) => {
+        await resolveJwtToken(context);
         let { id, ...data } = args.data as any
         let updateValue: any = {}
         Object.keys(data).forEach((field) => {
@@ -301,7 +324,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         let deletedExpense = context.prisma.expense.delete({
           where: {
             id: args.id,
@@ -316,13 +340,14 @@ export const Mutation = objectType({
       type: 'Loan',
       args: {
         amount: nonNull(floatArg()),
-        releaseDate: arg({type:'Date'})
+        releaseDate: arg({ type: 'Date' }),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.loan.create({
           data: {
             amount: args.amount,
-            releseDate: args.releaseDate
+            releseDate: args.releaseDate,
           },
         })
       },
@@ -333,7 +358,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.loan.delete({
           where: {
             id: args.id,
@@ -347,10 +373,11 @@ export const Mutation = objectType({
       args: {
         name: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.unitTypes.create({
           data: {
-            name: args.name
+            name: args.name,
           },
         })
       },
@@ -361,7 +388,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.unitTypes.delete({
           where: {
             id: args.id,
@@ -374,13 +402,14 @@ export const Mutation = objectType({
       type: 'LabourTypes',
       args: {
         name: nonNull(stringArg()),
-        amount: nonNull(floatArg())
+        amount: nonNull(floatArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.labourTypes.create({
           data: {
             name: args.name,
-            amount: args.amount
+            amount: args.amount,
           },
         })
       },
@@ -391,7 +420,8 @@ export const Mutation = objectType({
       args: {
         id: nonNull(stringArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.labourTypes.delete({
           where: {
             id: args.id,
@@ -402,16 +432,21 @@ export const Mutation = objectType({
 
     t.int('createLabourWork', {
       args: {
-        data: list(nonNull(arg({
-        type:'WorkerCountCreateInput'
-      })))
-    },
-      resolve:async (_, args:any, context: Context) => {
+        data: list(
+          nonNull(
+            arg({
+              type: 'WorkerCountCreateInput',
+            }),
+          ),
+        ),
+      },
+      resolve: async (_, args: any, context: Context) => {
+        await resolveJwtToken(context);
         let count = await context.prisma.labourWork.createMany({
           data: args.data,
-        });
+        })
 
-        return count.count ?? 0;
+        return count.count ?? 0
       },
     })
 
@@ -419,15 +454,16 @@ export const Mutation = objectType({
       type: 'LabourWork',
       args: {
         id: nonNull(stringArg()),
-        workerCount: nonNull(floatArg())
+        workerCount: nonNull(floatArg()),
       },
-      resolve: (_, args, context: Context) => {
+      resolve: async(_, args, context: Context) => {
+        await resolveJwtToken(context);
         return context.prisma.labourWork.update({
-          where:{
-            id: args.id
+          where: {
+            id: args.id,
           },
           data: {
-            workerCount: args.workerCount
+            workerCount: args.workerCount,
           },
         })
       },
@@ -435,24 +471,78 @@ export const Mutation = objectType({
 
     t.int('deleteLabourWork', {
       args: {
-        date:  nonNull(arg({type:'Date'})),
+        date: nonNull(arg({ type: 'Date' })),
       },
-      resolve: async(_, args, context: Context) => {
+      resolve: async (_, args, context: Context) => {
+        await resolveJwtToken(context);
         const works = await context.prisma.labourWork.findMany({
           where: {
-            workedOn: args.date
-          }
+            workedOn: args.date,
+          },
         })
-        works.forEach(async (val) => await context.prisma.labourWork.delete({
-          where: {
-            id: val.id
-          }
-        })
+        works.forEach(
+          async (val) =>
+            await context.prisma.labourWork.delete({
+              where: {
+                id: val.id,
+              },
+            }),
         )
         return works.length
       },
     })
 
+    t.field('createUser', {
+      type: 'User',
+      args: {
+        name: nonNull(stringArg()),
+        phone: nonNull(stringArg()),
+        password: nonNull(stringArg()),
+        email: nonNull(stringArg()),
+      },
+      resolve: async (_, args, context: Context) => {
+        await resolveJwtToken(context);
+        let data: any = {
+          name: args.name.trim(),
+          phone: args.phone.trim(),
+          email: args.email.trim(),
+          password: hashPassword(args.password),
+        }
+        return context.prisma.user.create({
+          data,
+        })
+      },
+    })
+
+    t.field('login', {
+      type: 'AuthToken',
+      args: {
+        phone: nonNull(stringArg()),
+        password: nonNull(stringArg()),
+      },
+      async resolve(_root, args: any, ctx) {
+        const user = await ctx.prisma.user.findUnique({
+          where: { phone: args.phone },
+        })
+        if (!user) {
+          throw new Error('No such user found')
+        }
+        const valid = passwordCompareSync(args.password, user.password)
+        if (!valid) {
+          throw new Error('Invalid password')
+        }
+        const token = generateJwt(ctx, { userId: user.id })
+        return { token }
+      },
+    })
+
+    t.field('refresh', {
+      type: 'AuthToken',
+      async resolve(_root, args: any, ctx) {
+        let token = getRefreshToken(ctx)
+        return { token }
+      },
+    })
   },
 })
 
@@ -470,13 +560,12 @@ export const expenseCreateInput = inputObjectType({
   },
 })
 
-
 export const workerCountCreateInput = inputObjectType({
-  name:'WorkerCountCreateInput',
+  name: 'WorkerCountCreateInput',
   definition(t) {
     t.nonNull.string('labourTypeId'),
-    t.nonNull.float('workerCount'),
-    t.field('workedOn',{type:'Date'})
+      t.nonNull.float('workerCount'),
+      t.field('workedOn', { type: 'Date' })
   },
 })
 
