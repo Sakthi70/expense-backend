@@ -104,7 +104,7 @@ type Mutation {
   createLabourTypes(amount: Float!, name: String!): LabourTypes
   createLabourWork(data: [WorkerCountCreateInput!]): Int
   createLoan(amount: Float!, releaseDate: Date): Loan
-  createSubCategory(categoryId: String!, name: String!): SubCategory
+  createSubCategory(categoryId: String!, name: String!, parentId: String): SubCategory
   createUnitType(name: String!): UnitTypes
   createUser(email: String!, name: String!, password: String!, phone: String!): User
   deleteCategory(id: String!): Category
@@ -119,7 +119,7 @@ type Mutation {
   updateCategory(id: String!, isActive: Boolean, isDeleted: Boolean, name: String): Category
   updateExpense(data: ExpenseUpDateInput!): Expense
   updateLabourWork(id: String!, workerCount: Float!): LabourWork
-  updateSubCategory(id: String!, isActive: Boolean, isDeleted: Boolean, name: String): SubCategory
+  updateSubCategory(id: String!, isActive: Boolean, isDeleted: Boolean, name: String, parentId: String): SubCategory
 }
 
 type Query {
@@ -136,12 +136,14 @@ type Query {
 type SubCategory {
   category: Category
   categoryId: String!
+  child: [SubCategory]
   count: Int
   createdAt: DateTime
   id: String!
   isActive: Boolean!
   isDeleted: Boolean!
   name: String!
+  parentId: String
   updatedAt: DateTime
 }
 

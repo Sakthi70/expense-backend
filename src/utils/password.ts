@@ -54,14 +54,14 @@ export const resolveJwtToken = async ({
 export const generateJwt = (ctx: Context, details: any) => {
   let refreshTokenId = guid.raw();
   let accessToken = jwt.sign(details, JWT_TOKEN_SECRET, {
-    expiresIn: "1h",
+    expiresIn: "48h",
   });
   let refreshToken = jwt.sign({ data: refreshTokenId }, JWT_REFRESH_TOKEN, {
-    expiresIn: "4h",
+    expiresIn: "48h",
   });
   REFRESH_TOKEN_JSON[refreshTokenId] = details;
   let now = new Date();
-  now.setTime(now.getTime() + 60 * 60 * 1000);
+  now.setTime(now.getTime() + 60 * 60 * 60 * 1000);
   ctx.res.cookie("refresh_token", refreshToken, {
     expires: now,
     sameSite: "none",

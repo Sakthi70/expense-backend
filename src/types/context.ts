@@ -211,13 +211,14 @@ export const Mutation = objectType({
         name: stringArg(),
         isActive: booleanArg(),
         isDeleted: booleanArg(),
+        parentId: stringArg()
       },
       resolve: async(_, args, context: Context) => {
         await resolveJwtToken(context);
         let { id, ...data } = args as any
         let updateValue: any = {}
         Object.keys(data).forEach((field) => {
-          if (data[field] !== undefined || data[field] !== null) {
+          if (data[field] !== undefined || (field !=='parentId' && data[field] !== null)) {
             updateValue[field] = data[field]
           }
         })
@@ -235,6 +236,7 @@ export const Mutation = objectType({
       args: {
         name: nonNull(stringArg()),
         categoryId: nonNull(stringArg()),
+        parentId: stringArg()
       },
       resolve: async(_, args, context: Context) => {
         await resolveJwtToken(context);
@@ -242,6 +244,7 @@ export const Mutation = objectType({
           data: {
             name: args.name,
             categoryId: args.categoryId,
+            parentId: args.parentId !== undefined ? args.parentId : null
           },
         })
       },

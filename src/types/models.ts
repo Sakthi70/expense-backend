@@ -49,6 +49,7 @@ export const Category = objectType({
     definition(t) {
       t.nonNull.string('id')
       t.nonNull.string('name')
+      t.nullable.string('parentId')
       t.nonNull.boolean('isActive')
       t.nonNull.boolean('isDeleted')
       t.field('createdAt', { type: 'DateTime' })
@@ -66,6 +67,14 @@ export const Category = objectType({
         resolve: (parent, _, context: Context) => {
           return context.prisma.category.findFirst({
             where: { id: parent.categoryId || undefined },
+          })
+        },
+      })
+      t.list.field('child', {
+        type: 'SubCategory',
+        resolve: (parent, _, context: Context) => {
+          return context.prisma.subCategory.findMany({
+            where: { parentId : parent.id || undefined },
           })
         },
       })
