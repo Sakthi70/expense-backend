@@ -70,6 +70,14 @@ export const Category = objectType({
           })
         },
       })
+      t.field('parent', {
+        type: 'SubCategory',
+        resolve: (parent, _, context: Context) => {
+          return context.prisma.subCategory.findFirst({
+            where: { id: parent.parentId ?? undefined },
+          })
+        },
+      })
       t.list.field('child', {
         type: 'SubCategory',
         resolve: (parent, _, context: Context) => {

@@ -143,6 +143,7 @@ type SubCategory {
   isActive: Boolean!
   isDeleted: Boolean!
   name: String!
+  parent: SubCategory
   parentId: String
   updatedAt: DateTime
 }
